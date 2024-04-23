@@ -1,3 +1,5 @@
+package lab1;
+
 public class Counter {
 
     private int count;
@@ -42,7 +44,6 @@ public class Counter {
             System.out.println("Final value is: " + c1.getCount());
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
     }
 }
 

@@ -1,0 +1,26 @@
+Alphabet: {'f', 'b', 'd', 'e', 'c', 'a'}
+Word: acdcfbbe
+Dependency graph: [('a', 'a'), ('a', 'c'), ('a', 'f'), ('b', 'b'), ('b', 'e'), ('c', 'a'), ('c', 'c'), ('c', 'e'), ('c', 'f'), ('d', 'd'), ('d', 'f'), ('e', 'b'), ('e', 'c'), ('e', 'e'), ('f', 'a'), ('f', 'c'), ('f', 'd'), ('f', 'f')]
+Independency graph: [('a', 'b'), ('a', 'd'), ('a', 'e'), ('b', 'a'), ('b', 'c'), ('b', 'd'), ('b', 'f'), ('c', 'b'), ('c', 'd'), ('d', 'a'), ('d', 'b'), ('d', 'c'), ('d', 'e'), ('e', 'a'), ('e', 'd'), ('e', 'f'), ('f', 'b'), ('f', 'e')]
+Word's dependence graph: {0: {1, 3, 4}, 1: {3, 4, 7}, 2: {4}, 3: {4, 7}, 4: set(), 5: {6, 7}, 6: {7}, 7: set()}
+Foata normal form: (bda)(bc)(c)(ef)
+Hasse diagram: [(0, 1), (1, 3), (2, 4), (3, 4), (3, 7), (5, 6), (6, 7)]
+Hasse diagram dot file: 
+digraph G {
+	6 -> 7
+	5 -> 6
+	3 -> 4
+	3 -> 7
+	2 -> 4
+	1 -> 3
+	0 -> 1
+
+	0 [label="a"]
+	1 [label="c"]
+	2 [label="d"]
+	3 [label="c"]
+	4 [label="f"]
+	5 [label="b"]
+	6 [label="b"]
+	7 [label="e"]
+}

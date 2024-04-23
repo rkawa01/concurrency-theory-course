@@ -28,20 +28,28 @@ class FineGrainedLockList {
         pred.lock.lock();
         try {
             Node curr = pred.next;
-            curr.lock.lock();
+            if (curr != null) {
+                curr.lock.lock();
             try {
-                while (curr.value != null) {
+                while (curr != null) {
                     if (o.equals(curr.value)) {
                         return true;
                     }
                     pred.lock.unlock();
                     pred = curr;
                     curr = curr.next;
-                    curr.lock.lock();
+                    if (curr != null){
+                        curr.lock.lock();
+                    }
                 }
                 return false;
             } finally {
-                curr.lock.unlock();
+                if (curr != null) {
+                    curr.lock.unlock();
+                }
+            }
+            } else {
+                return false;
             }
         } finally {
             pred.lock.unlock();
@@ -53,112 +61,70 @@ class FineGrainedLockList {
         pred.lock.lock();
         try {
             Node curr = pred.next;
-            curr.lock.lock();
-            try {
-                while (curr.value != null) {
-                    if (o.equals(curr.value)) {
-                        pred.next = curr.next;
-                        return true;
+
+            if (curr != null) {
+                curr.lock.lock();
+
+                try {
+                    while (curr != null) {
+                        if (o.equals(curr.value)) {
+                            pred.next = curr.next;
+                            return true;
+                        }
+                        pred.lock.unlock();
+                        pred = curr;
+                        curr = curr.next;
+                        curr.lock.lock();
                     }
-                    pred.lock.unlock();
-                    pred = curr;
-                    curr = curr.next;
-                    curr.lock.lock();
+                    return false;
+                } finally {
+                    curr.lock.unlock();
                 }
+            }  else {
                 return false;
-            } finally {
-                curr.lock.unlock();
             }
         } finally {
             pred.lock.unlock();
         }
     }
 
-    public boolean add(Object o) {
+    public boolean add(Object o,int sleepTime) {
         Node newNode = new Node(o);
         Node pred = head;
         pred.lock.lock();
         try {
             Node curr = pred.next;
-            curr.lock.lock();
-            try {
-                while (curr.value != null) {
-                    pred.lock.unlock();
-                    pred = curr;
-                    curr = curr.next;
-                    curr.lock.lock();
+            if (curr != null) {
+                curr.lock.lock();
+                // sleep for sleepTime milliseconds
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                try {
+                    while (curr != null) {
+                        pred.lock.unlock();
+                        pred = curr;
+                        curr = curr.next;
+                        if (curr != null) {
+                            curr.lock.lock();
+                        }
+                    }
+                    pred.next = newNode;
+                    return true;
+                } finally {
+                    if (curr != null) {
+                        curr.lock.unlock();
+                    }
+                }
+            } else {
                 pred.next = newNode;
                 return true;
-            } finally {
-                curr.lock.unlock();
             }
+
         } finally {
             pred.lock.unlock();
-        }
-    }
-}
-
-class FineGrainedLockReadWrite {
-    private FineGrainedLockList list;
-    private int readers;
-    private Lock globalLock;
-    private Condition noWriters;
-
-    public FineGrainedLockReadWrite() {
-        this.list = new FineGrainedLockList();
-        this.readers = 0;
-        this.globalLock = new ReentrantLock();
-        this.noWriters = globalLock.newCondition();
-    }
-
-    public void startReading() {
-        globalLock.lock();
-        try {
-            while (readers == -1) {
-                noWriters.await();
-            }
-            readers++;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            globalLock.unlock();
-        }
-    }
-
-    public void endReading() {
-        globalLock.lock();
-        try {
-            readers--;
-            if (readers == 0) {
-                noWriters.signal();
-            }
-        } finally {
-            globalLock.unlock();
-        }
-    }
-
-    public void startWriting() {
-        globalLock.lock();
-        try {
-            while (readers != 0) {
-                noWriters.await();
-            }
-            readers = -1; // Block all readers
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            globalLock.unlock();
-        }
-    }
-
-    public void endWriting() {
-        globalLock.lock();
-        try {
-            readers = 0;
-            noWriters.signal();
-        } finally {
-            globalLock.unlock();
         }
     }
 }
